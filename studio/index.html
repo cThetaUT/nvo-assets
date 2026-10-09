@@ -360,7 +360,7 @@
     pc.classList.add('enter-play');
   }
   window.addEventListener('message', function (e) {
-    if (e.origin !== 'https://cthetaut.github.io' && e.origin !== 'null') return;
+    if (e.source !== window.parent) return; /* only our direct parent may trigger */
     if (e.data === 'nvo-visible') { pendingVisible = true; tryEnter(); }
   });
   var bootPoll = setInterval(function () {
