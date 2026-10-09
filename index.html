@@ -484,28 +484,34 @@
 
   renderTabs(); renderTime(); draw();
 
-  /* entrance fade-up (carrd-style): triggered by the PARENT page (embed script) via
-     postMessage when the iframe scrolls into view; gated on widget boot.
-     - standalone (opened directly, no parent): fade on boot
-     - embedded without signal for 45s: failsafe fade (never stay invisible) */
+  /* entrance fade-up (carrd-style): handshake with parent page.
+     parent embed script posts 'nvo-visible' every 400ms until acked.
+     embedded: fade requires widgets booted AND (signal queued OR 45s failsafe).
+     standalone: fade as soon as booted. ack ('nvo-ack') stops the parent loop. */
   var pc = document.getElementById('playerCard');
-  var enterDone = false;
-  function playEnter() {
+  var enterDone = false, pendingVisible = false;
+  function tryEnter() {
     if (enterDone || !readyF.some(Boolean)) return;
+    if (window.self !== window.top && !pendingVisible) return;
+    enterDone = true;
+    pc.classList.add('enter-play');
+    try { window.parent.postMessage('nvo-ack', '*'); } catch (e) {}
+  }
+  function failsafeEnter() {
+    if (enterDone) return;
     enterDone = true;
     pc.classList.add('enter-play');
   }
   window.addEventListener('message', function (e) {
-    if (e.data === 'nvo-visible') playEnter();
+    if (e.source !== window.parent) return; /* only our direct parent may trigger */
+    if (e.data === 'nvo-visible') { pendingVisible = true; tryEnter(); }
   });
-  if (window.self === window.top) {
-    /* standalone page: no scroll parent — fade as soon as booted */
-    var bootPoll = setInterval(function () {
-      if (readyF.some(Boolean)) { clearInterval(bootPoll); playEnter(); }
-    }, 300);
-  } else {
-    /* embedded: rely on parent signal; failsafe after 45s */
-    setTimeout(playEnter, 45000);
+  var bootPoll = setInterval(function () {
+    if (enterDone) { clearInterval(bootPoll); return; }
+    tryEnter();
+  }, 300);
+  if (window.self !== window.top) {
+    setTimeout(failsafeEnter, 45000);
   }
 
   window.__errs = [];
