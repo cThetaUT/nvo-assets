@@ -484,13 +484,23 @@
 
   renderTabs(); renderTime(); draw();
 
-  /* entrance fade-up (carrd-style): settle layout for one frame, then play */
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () {
-      var pc = document.getElementById('playerCard');
-      if (pc) pc.classList.add('enter-play');
-    });
-  });
+  /* entrance fade-up (carrd-style): scroll-synced — plays when actually visible,
+     matching the surrounding widgets; initial IO callback covers load-in-view */
+  var pc = document.getElementById('playerCard');
+  if (pc && 'IntersectionObserver' in window) {
+    var enterIO = new IntersectionObserver(function (entries) {
+      for (var k = 0; k < entries.length; k++) {
+        if (entries[k].isIntersecting) {
+          pc.classList.add('enter-play');
+          enterIO.disconnect();
+          break;
+        }
+      }
+    }, { threshold: 0.2 });
+    enterIO.observe(pc);
+  } else if (pc) {
+    pc.classList.add('enter-play');
+  }
 
   window.__errs = [];
   window.__np = {
