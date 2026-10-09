@@ -269,13 +269,18 @@
       DUR = Math.round(audio.duration * 1000);
     }
   });
-  audio.addEventListener('canplaythrough', function () {
+  function markReady() {
     if (ready) return;
     ready = true; SRC_OK = true;
     waveWrap.classList.remove('loading');
     applyVolume();
     renderTime(); scheduleDraw();
-  });
+  }
+  /* canplay fires at HAVE_FUTURE_DATA; canplaythrough may never fire on slow links;
+     loadeddata (HAVE_CURRENT_DATA) still allows playback start */
+  audio.addEventListener('canplay', markReady);
+  audio.addEventListener('canplaythrough', markReady);
+  audio.addEventListener('loadeddata', markReady);
   audio.addEventListener('timeupdate', function () {
     pos = audio.currentTime * 1000;
     renderTime(); scheduleDraw();
@@ -289,7 +294,13 @@
     renderTime(); scheduleDraw();
   });
   audio.addEventListener('error', fail);
-  setTimeout(function () { if (!ready && !failed) fail(); }, 20000);
+  /* slow-link safeguard: never kill a loading stream — resolve via readyState probe */
+  var readyPoll = setInterval(function () {
+    if (failed || ready) { clearInterval(readyPoll); return; }
+    if (audio.readyState >= 2) markReady();           /* HAVE_CURRENT_DATA+ */
+    else if (audio.error) fail();
+  }, 1000);
+  setTimeout(function () { if (!ready && !failed) fail(); }, 45000);
 
   function fail() {
     if (failed) return;
