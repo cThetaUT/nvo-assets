@@ -341,23 +341,34 @@
 
   window.addEventListener('resize', scheduleDraw);
 
-  /* ---------- entrance fade: parent signal (postMessage) / standalone boot / 45s failsafe ---------- */
+  /* ---------- entrance fade: handshake with parent page ----------
+     parent embed script posts 'nvo-visible' every 400ms until acked.
+     embedded: fade requires ready AND (signal queued OR 45s failsafe).
+     standalone: fade as soon as ready. ack ('nvo-ack') stops the parent loop. */
   var pc = document.getElementById('playerCard');
-  var enterDone = false;
-  function playEnter() {
+  var enterDone = false, pendingVisible = false;
+  function tryEnter() {
     if (enterDone || !ready) return;
+    if (window.self !== window.top && !pendingVisible) return;
+    enterDone = true;
+    pc.classList.add('enter-play');
+    try { window.parent.postMessage('nvo-ack', '*'); } catch (e) {}
+  }
+  function failsafeEnter() {
+    if (enterDone) return;
     enterDone = true;
     pc.classList.add('enter-play');
   }
   window.addEventListener('message', function (e) {
-    if (e.data === 'nvo-visible') playEnter();
+    if (e.origin !== 'https://cthetaut.github.io' && e.origin !== 'null') return;
+    if (e.data === 'nvo-visible') { pendingVisible = true; tryEnter(); }
   });
-  if (window.self === window.top) {
-    var bootPoll = setInterval(function () {
-      if (ready) { clearInterval(bootPoll); playEnter(); }
-    }, 300);
-  } else {
-    setTimeout(playEnter, 45000);
+  var bootPoll = setInterval(function () {
+    if (enterDone) { clearInterval(bootPoll); return; }
+    tryEnter();
+  }, 300);
+  if (window.self !== window.top) {
+    setTimeout(failsafeEnter, 45000);
   }
 
   /* ---------- boot ---------- */
