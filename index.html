@@ -30,14 +30,8 @@
   .head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
   .brand { font-size:13px; letter-spacing:0.22em; text-transform:uppercase; color:#fff; text-shadow:0.108rem 0.062rem 0.875rem #FF008A; white-space:nowrap; }
   .brand .tag { color:#FF8CA8; margin-right:6px; }
-  .mute {
-    background:transparent; border:1px solid #FFFFFF; color:rgba(255,255,255,.9);
-    border-radius:0.375rem;
-    width:26px; height:22px; cursor:pointer; display:flex; align-items:center; justify-content:center;
-    transition:border-color .25s ease, color .25s ease, background-color .25s ease; flex:0 0 auto;
-  }
-  .mute:hover { border-color:#FF8CA8; color:#FF8CA8; }
-  .mute svg { width:13px; height:13px; display:block; }
+  .ctl.mute { width:30px; height:30px; }
+  .mute svg { width:15px; height:15px; display:block; }
   .mute .on { display:block; } .mute .off { display:none; }
   body.muted .mute .on { display:none; } body.muted .mute .off { display:block; }
   /* ---- tabs ---- */
@@ -128,6 +122,16 @@
     transition:background-color .25s ease, color .25s ease;
   }
   .fallback a:hover { border-color:#FF8CA8; color:#FF8CA8; }
+  /* ---- entrance fade (mirrors carrd onvisible 'fade-up', speed 1875, intensity 5) ---- */
+  .enter-init { opacity:0; transform:translateY(7.5rem); }
+  .enter-play {
+    opacity:1; transform:none;
+    transition:opacity 1.875s ease, transform 1.875s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .enter-init { opacity:1; transform:none; }
+    .enter-play { transition:none; }
+  }
   /* ---- compact: keep total height constant at any width (fixed-height iframe embed) ---- */
   @media (max-width: 560px) {
     .tab { font-size:8.5px; letter-spacing:0.05em; gap:3px; height:26px; padding:0 2px; }
@@ -143,13 +147,9 @@
 </style>
 </head>
 <body>
-<div class="player">
+<div class="player enter-init" id="playerCard">
   <div class="head">
     <div class="brand"><span class="tag">&#9672;</span>Demo Player</div>
-    <button class="mute" id="muteBtn" title="Mute / unmute">
-      <svg class="on" viewBox="0 0 16 16" fill="currentColor"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11 5c1 .8 1.6 1.8 1.6 3S12 10.2 11 11" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M12.6 3.2c1.6 1.2 2.5 2.9 2.5 4.8s-.9 3.6-2.5 4.8" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
-      <svg class="off" viewBox="0 0 16 16" fill="currentColor"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11 5.5 15 9.5M15 5.5 11 9.5" stroke="currentColor" stroke-width="1.3"/></svg>
-    </button>
   </div>
 
   <div class="tabs" id="tabs"></div>
@@ -169,6 +169,10 @@
     </button>
     <button class="ctl next" id="nextBtn" title="Next sample">
       <svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1v10L8.5 6z"/><rect x="8.9" y="1" width="1.6" height="10"/></svg>
+    </button>
+    <button class="ctl mute" id="muteBtn" title="Mute / unmute">
+      <svg class="on" viewBox="0 0 16 16" fill="currentColor"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11 5c1 .8 1.6 1.8 1.6 3S12 10.2 11 11" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M12.6 3.2c1.6 1.2 2.5 2.9 2.5 4.8s-.9 3.6-2.5 4.8" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+      <svg class="off" viewBox="0 0 16 16" fill="currentColor"><path d="M2 6h3l4-3v10l-4-3H2z"/><path d="M11 5.5 15 9.5M15 5.5 11 9.5" stroke="currentColor" stroke-width="1.3"/></svg>
     </button>
     <div class="vol">
       <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="80" title="Volume" aria-label="Volume">
@@ -479,6 +483,15 @@
   }, 500);
 
   renderTabs(); renderTime(); draw();
+
+  /* entrance fade-up (carrd-style): settle layout for one frame, then play */
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      var pc = document.getElementById('playerCard');
+      if (pc) pc.classList.add('enter-play');
+    });
+  });
+
   window.__errs = [];
   window.__np = {
     get state() {
