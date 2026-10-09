@@ -123,6 +123,18 @@
     transition:background-color .25s ease, color .25s ease;
   }
   .fallback a:hover { background:#FF8CA8; border-color:#FF8CA8; color:#1C1C21; }
+  /* ---- compact: keep total height constant at any width (fixed-height iframe embed) ---- */
+  @media (max-width: 560px) {
+    .tab { font-size:8.5px; letter-spacing:0.05em; gap:3px; height:26px; padding:0 2px; }
+    .tab .dur, .tab .eq { display:none !important; }
+    .brand { font-size:11.5px; }
+    .vol-slider { width:44px; }
+    .time { font-size:10px; }
+    .sc-link { display:none; }
+    .wave-wrap { height:60px; }
+    .wave-wrap canvas { height:60px; }
+    .player { padding:11px 12px 9px; }
+  }
 </style>
 </head>
 <body>
