@@ -484,31 +484,29 @@
 
   renderTabs(); renderTime(); draw();
 
-  /* entrance fade-up (carrd-style): scroll-synced — plays when actually visible AND
-     booted, matching the surrounding widgets; initial IO callback covers load-in-view */
+  /* entrance fade-up (carrd-style): triggered by the PARENT page (embed script) via
+     postMessage when the iframe scrolls into view; gated on widget boot.
+     - standalone (opened directly, no parent): fade on boot
+     - embedded without signal for 45s: failsafe fade (never stay invisible) */
   var pc = document.getElementById('playerCard');
-  var ioFired = false;
-  function tryEnter() {
-    if (!ioFired || !readyF.some(Boolean)) return;
+  var enterDone = false;
+  function playEnter() {
+    if (enterDone || !readyF.some(Boolean)) return;
+    enterDone = true;
     pc.classList.add('enter-play');
   }
-  if (pc && 'IntersectionObserver' in window) {
-    var enterIO = new IntersectionObserver(function (entries) {
-      for (var k = 0; k < entries.length; k++) {
-        if (entries[k].isIntersecting) {
-          ioFired = true;
-          enterIO.disconnect();
-          tryEnter();
-          break;
-        }
-      }
-    }, { threshold: 0.2 });
-    enterIO.observe(pc);
-  } else if (pc) {
-    ioFired = true;
+  window.addEventListener('message', function (e) {
+    if (e.data === 'nvo-visible') playEnter();
+  });
+  if (window.self === window.top) {
+    /* standalone page: no scroll parent — fade as soon as booted */
+    var bootPoll = setInterval(function () {
+      if (readyF.some(Boolean)) { clearInterval(bootPoll); playEnter(); }
+    }, 300);
+  } else {
+    /* embedded: rely on parent signal; failsafe after 45s */
+    setTimeout(playEnter, 45000);
   }
-  /* if widgets finish booting after visibility already happened */
-  setInterval(function () { if (ioFired) tryEnter(); }, 500);
 
   window.__errs = [];
   window.__np = {
