@@ -17,39 +17,42 @@
     overflow:hidden;
   }
   .player {
-    width:100%; max-width:640px; margin:0 auto;
+    width:100%; max-width:640px; margin:0 auto; margin:0 auto;
     background:#1C1C21;
-    border:1px solid rgba(255,255,255,.85);
-    box-shadow:0 0 0.55rem 0 #FF008A;
+    border:1px solid #FFFFFF;
+    border-radius:0.125rem;
+    box-shadow:0 0 0.25rem 0 #FF00F5;
     padding:14px 16px 12px;
     position:relative;
     user-select:none;
   }
   /* ---- header ---- */
   .head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
-  .brand { font-size:13px; letter-spacing:0.22em; text-transform:uppercase; color:#fff; text-shadow:0 0 0.55rem #FF008A; white-space:nowrap; }
+  .brand { font-size:13px; letter-spacing:0.22em; text-transform:uppercase; color:#fff; text-shadow:0.108rem 0.062rem 0.875rem #FF008A; white-space:nowrap; }
   .brand .tag { color:#FF8CA8; margin-right:6px; }
   .mute {
-    background:none; border:1px solid rgba(255,255,255,.35); color:rgba(255,255,255,.75);
+    background:transparent; border:1px solid #FFFFFF; color:rgba(255,255,255,.9);
+    border-radius:0.375rem;
     width:26px; height:22px; cursor:pointer; display:flex; align-items:center; justify-content:center;
-    transition:border-color .25s ease, color .25s ease, box-shadow .25s ease; flex:0 0 auto;
+    transition:border-color .25s ease, color .25s ease, background-color .25s ease; flex:0 0 auto;
   }
-  .mute:hover { border-color:#FF8CA8; color:#FF8CA8; box-shadow:0 0 0.4rem 0 rgba(255,0,138,.6); }
+  .mute:hover { border-color:#FF8CA8; color:#FF8CA8; }
   .mute svg { width:13px; height:13px; display:block; }
   .mute .on { display:block; } .mute .off { display:none; }
   body.muted .mute .on { display:none; } body.muted .mute .off { display:block; }
   /* ---- tabs ---- */
   .tabs { display:flex; gap:6px; margin-bottom:10px; }
   .tab {
-    flex:1 1 0; min-width:0; background:transparent;
-    border:1px solid rgba(255,255,255,.85); color:#fff;
+    flex:1 1 0; min-width:0; background:rgba(255,255,255,0.169);
+    border:1px solid #FFFFFF; color:#fff; border-radius:0.375rem;
+    box-shadow:0 0 0.5rem 0 #FF008A;
     font-family:inherit; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase;
     height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;
     transition:background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 4px;
   }
-  .tab:hover { background:#FF8CA8; border-color:#FF8CA8; color:#1C1C21; }
-  .tab.active { background:#FF008A; border-color:#FF008A; color:#fff; box-shadow:0 0 0.45rem 0 rgba(255,0,138,.55); }
+  .tab:hover { background:#FF8CA8; border-color:#FF8CA8; color:#FFFFFF; }
+  .tab.active { background:#FF008A; border-color:#FF008A; color:#fff; }
   .tab .dur { font-family:'Lucida Console', monospace; font-size:8px; opacity:.75; letter-spacing:0; }
   /* equalizer icon on the active tab */
   .eq { display:none; align-items:flex-end; gap:1.5px; height:10px; width:12px; flex:0 0 auto; }
@@ -64,18 +67,19 @@
   @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:.85} }
   .loadtxt {
     position:absolute; inset:0; display:none; align-items:center; justify-content:center;
-    font-size:10px; letter-spacing:0.3em; color:rgba(255,255,255,.85); text-shadow:0 0 0.5rem #FF008A; pointer-events:none;
+    font-size:10px; letter-spacing:0.3em; color:rgba(255,255,255,.85); text-shadow:0.108rem 0.062rem 0.875rem #FF008A; pointer-events:none;
   }
   .wave-wrap.loading .loadtxt { display:flex; }
   /* ---- bottom row ---- */
   .bottom { display:flex; align-items:center; gap:8px; }
   .ctl {
-    background:none; border:1px solid rgba(255,255,255,.55); color:#fff; cursor:pointer;
+    background:transparent; border:1px solid #FFFFFF; color:#fff; cursor:pointer;
+    border-radius:0.375rem;
     display:flex; align-items:center; justify-content:center;
-    transition:border-color .25s ease, color .25s ease, box-shadow .25s ease, background-color .25s ease;
+    transition:border-color .25s ease, color .25s ease, background-color .25s ease;
   }
-  .ctl:hover { border-color:#FF8CA8; color:#FF8CA8; box-shadow:0 0 0.4rem 0 rgba(255,0,138,.55); }
-  .ctl svg { display:block; }
+  .ctl:hover { border-color:#FF8CA8; color:#FF8CA8; }
+  .ctl svg { display:block; fill:currentColor; }
   .ctl.prev, .ctl.next { width:30px; height:30px; flex:0 0 auto; }
   .ctl.prev svg, .ctl.next svg { width:11px; height:11px; }
   .ctl.play { width:42px; height:42px; flex:0 0 auto; }
@@ -118,11 +122,12 @@
   .fallback p { font-size:9px; letter-spacing:0.2em; color:rgba(255,255,255,.6); margin-bottom:10px; text-transform:uppercase; }
   .fallback a {
     display:inline-block; margin:3px 4px; padding:6px 10px;
-    border:1px solid rgba(255,255,255,.85); color:#fff; text-decoration:none;
+    border:1px solid #FFFFFF; color:#fff; text-decoration:none;
+    background:transparent; border-radius:0.375rem;
     font-size:9px; letter-spacing:0.12em; text-transform:uppercase;
     transition:background-color .25s ease, color .25s ease;
   }
-  .fallback a:hover { background:#FF8CA8; border-color:#FF8CA8; color:#1C1C21; }
+  .fallback a:hover { border-color:#FF8CA8; color:#FF8CA8; }
   /* ---- compact: keep total height constant at any width (fixed-height iframe embed) ---- */
   @media (max-width: 560px) {
     .tab { font-size:8.5px; letter-spacing:0.05em; gap:3px; height:26px; padding:0 2px; }
