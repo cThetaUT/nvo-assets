@@ -6,6 +6,11 @@
 <title>Demo Player</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Carter+One&display=swap" rel="stylesheet">
+<script>/* early signal capture: parent may post nvo-visible while this doc is still parsing */
+window.__nvoEarlyVisible = false;
+window.addEventListener('message', function (e) {
+  if (e.source === window.parent && e.data === 'nvo-visible') window.__nvoEarlyVisible = true;
+});</script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { background:transparent; }
@@ -491,7 +496,7 @@
      embedded: fade on signal OR 1.2s failsafe (never sit invisible).
      standalone: fade immediately. ack ('nvo-ack') stops the parent loop. */
   var pc = document.getElementById('playerCard');
-  var enterDone = false, pendingVisible = false;
+  var enterDone = false, pendingVisible = !!window.__nvoEarlyVisible;
   function showCard(instant) {
     if (enterDone) return;
     enterDone = true;
