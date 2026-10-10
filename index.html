@@ -485,34 +485,47 @@
   renderTabs(); renderTime(); draw();
 
   /* entrance fade-up (carrd-style): handshake with parent page.
-     parent embed script posts 'nvo-visible' every 400ms until acked.
-     embedded: fade requires widgets booted AND (signal queued OR 45s failsafe).
-     standalone: fade as soon as booted. ack ('nvo-ack') stops the parent loop. */
+     parent embed script posts 'nvo-visible' every 250ms until acked; it also
+     replies to our 'nvo-pilot?' ping. Visibility is decoupled from audio
+     readiness (waveform peaks are baked — the card never needs SC data).
+     embedded: fade on signal OR 1.2s failsafe (never sit invisible).
+     standalone: fade immediately. ack ('nvo-ack') stops the parent loop. */
   var pc = document.getElementById('playerCard');
   var enterDone = false, pendingVisible = false;
-  function tryEnter() {
-    if (enterDone || !readyF.some(Boolean)) return;
-    if (window.self !== window.top && !pendingVisible) return;
+  function showCard(instant) {
+    if (enterDone) return;
     enterDone = true;
+    if (instant) pc.style.transition = 'none';
     pc.classList.add('enter-play');
     try { window.parent.postMessage('nvo-ack', '*'); } catch (e) {}
   }
-  function failsafeEnter() {
+  function tryEnter() {
     if (enterDone) return;
-    enterDone = true;
-    pc.classList.add('enter-play');
+    if (window.self !== window.top && !pendingVisible) return;
+    showCard(false);
+  }
+  var pilotTimer = null;
+  if (window.self !== window.top) {
+    /* ask the parent trigger to identify itself: a healthy script replies
+       'nvo-visible' immediately; a broken/absent one stays silent */
+    pilotTimer = setInterval(function () {
+      if (enterDone) { clearInterval(pilotTimer); return; }
+      try { window.parent.postMessage('nvo-pilot?', '*'); } catch (e) {}
+    }, 500);
+    setTimeout(function () { showCard(true); }, 1200);
   }
   window.addEventListener('message', function (e) {
     if (e.source !== window.parent) return; /* only our direct parent may trigger */
-    if (e.data === 'nvo-visible') { pendingVisible = true; tryEnter(); }
+    if (e.data === 'nvo-visible') {
+      pendingVisible = true;
+      if (pilotTimer) { clearInterval(pilotTimer); pilotTimer = null; }
+      tryEnter();
+    }
   });
   var bootPoll = setInterval(function () {
     if (enterDone) { clearInterval(bootPoll); return; }
     tryEnter();
   }, 300);
-  if (window.self !== window.top) {
-    setTimeout(failsafeEnter, 15000);
-  }
 
   window.__errs = [];
   window.__np = {
